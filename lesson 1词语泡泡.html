@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maggie's Bubble Matching Game</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #87CEEB;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="20" cy="20" r="3" fill="white" opacity="0.7"/><circle cx="50" cy="50" r="4" fill="white" opacity="0.7"/><circle cx="80" cy="30" r="3" fill="white" opacity="0.7"/><circle cx="30" cy="70" r="3" fill="white" opacity="0.7"/><circle cx="70" cy="80" r="4" fill="white" opacity="0.7"/></svg>');
+            background-size: 100px 100px;
+        }
+        
+        h1 {
+            color: #E52B50;
+            text-shadow: 3px 3px 0 #FFD700, 5px 5px 0 rgba(0,0,0,0.2);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .bubbles-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            margin: 30px auto;
+            justify-items: center;
+        }
+        
+        .bubble {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            position: relative;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2), 
+                        inset 0 10px 20px rgba(255,255,255,0.3),
+                        0 5px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            word-break: break-word;
+        }
+        
+        .bubble:hover {
+            transform: scale(1.05);
+        }
+        
+        .bubble.selected {
+            transform: scale(1.1);
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.2), 
+                        inset 0 10px 20px rgba(255,255,255,0.5),
+                        0 0 20px #FFD700,
+                        0 5px 10px rgba(0,0,0,0.3);
+        }
+        
+        .bubble.matched {
+            animation: pop 0.5s forwards;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        
+        .controls {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        button {
+            background-color: #FFD700;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #E52B50;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #D4AF37, 0 8px 10px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-transform: uppercase;
+        }
+        
+        button:hover {
+            background-color: #FFEC40;
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #D4AF37, 0 5px 5px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 #D4AF37, 0 2px 2px rgba(0,0,0,0.2);
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 100;
+            text-align: center;
+            max-width: 80%;
+            display: none;
+        }
+        
+        .success-message h2 {
+            color: #E52B50;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        .success-message p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+        
+        .decoration {
+            position: absolute;
+            z-index: -1;
+        }
+        
+        .cloud {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        
+        .mario-icon {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+        
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        
+        .start-screen h2 {
+            color: #FFD700;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 0 #E52B50;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Maggie's Bubble Matching Game</h1>
+        
+        <div class="controls">
+            <button id="shuffle-btn">打乱顺序</button>
+            <button id="start-btn">开始</button>
+        </div>
+        
+        <div class="bubbles-container" id="bubbles-container">
+            <!-- Bubbles will be generated here -->
+        </div>
+        
+        <div class="success-message" id="success-message">
+            <h2>恭喜你挑战成功！</h2>
+            <p id="completion-time">用时: 0分0秒</p>
+            <button id="next-round-btn">继续挑战</button>
+        </div>
+        
+        <!-- Decorative elements -->
+        <div class="decoration" style="top: 10px; left: 10px; width: 80px; height: 40px; border-radius: 40px; background-color: white; opacity: 0.8;"></div>
+        <div class="decoration" style="top: 30px; right: 20px; width: 100px; height: 50px; border-radius: 50px; background-color: white; opacity: 0.8;"></div>
+        <div class="decoration" style="bottom: 50px; left: 50px; width: 60px; height: 30px; border-radius: 30px; background-color: white; opacity: 0.8;"></div>
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23E52B50'/><circle cx='35' cy='40' r='10' fill='white'/><circle cx='65' cy='40' r='10' fill='white'/><circle cx='35' cy='40' r='5' fill='black'/><circle cx='65' cy='40' r='5' fill='black'/><path d='M30,65 Q50,80 70,65' stroke='black' stroke-width='3' fill='none'/><path d='M25,25 L40,15 M75,25 L60,15' stroke='black' stroke-width='3'/></svg>" class="mario-icon">
+    </div>
+
+    <audio id="bubble-sound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."></audio>
+    <audio id="match-sound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."></audio>
+    <audio id="success-sound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU..."></audio>
+
+    <script>
+        // Word pairs
+        const allWordPairs = [
+            { chinese: "放假", english: "Holiday/Vacation" },
+            { chinese: "寒假", english: "Winter Vacation" },
+            { chinese: "暑假", english: "Summer Vacation" },
+            { chinese: "打算", english: "Plan" },
+            { chinese: "告诉", english: "Tell" },
+            { chinese: "忘记", english: "Forget" },
+            { chinese: "决定", english: "Decide" },
+            { chinese: "大家", english: "Everyone" },
+            { chinese: "表兄妹", english: "Cousins" },
+            { chinese: "小朋友", english: "Children" },
+            { chinese: "见面", english: "Meet" },
+            { chinese: "出发", english: "Depart" },
+            { chinese: "旅游", english: "Travel" },
+            { chinese: "景点", english: "Scenic Spot" },
+            { chinese: "地方", english: "Place" },
+            { chinese: "长江", english: "Yangtze River" },
+            { chinese: "大海", english: "Ocean" },
+            { chinese: "三峡大坝", english: "Three Gorges Dam" },
+            { chinese: "清迈", english: "Chiang Mai" },
+            { chinese: "宋干节", english: "Songkran Festival" },
+            { chinese: "哈哈", english: "Haha" }
+        ];
+
+        // Game variables
+        let currentPairs = [];
+        let selectedBubbles = [];
+        let matchedPairs = 0;
+        let startTime;
+        let timer;
+        let gameActive = false;
+
+        // DOM elements
+        const bubblesContainer = document.getElementById('bubbles-container');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const startBtn = document.getElementById('start-btn');
+        const successMessage = document.getElementById('success-message');
+        const completionTime = document.getElementById('completion-time');
+        const nextRoundBtn = document.getElementById('next-round-btn');
+        const bubbleSound = document.getElementById('bubble-sound');
+        const matchSound = document.getElementById('match-sound');
+        const successSound = document.getElementById('success-sound');
+
+        // Initialize game
+        function initGame() {
+            // Use all 21 pairs
+            currentPairs = [...allWordPairs];
+            
+            // Create both Chinese and English bubbles
+            const allBubbles = [];
+            currentPairs.forEach(pair => {
+                allBubbles.push({ text: pair.chinese, type: 'chinese', pairId: currentPairs.indexOf(pair) });
+                allBubbles.push({ text: pair.english, type: 'english', pairId: currentPairs.indexOf(pair) });
+            });
+            
+            // Shuffle bubbles
+            shuffleBubbles(allBubbles);
+            
+            // Clear container
+            bubblesContainer.innerHTML = '';
+            
+            // Create bubbles
+            allBubbles.forEach((bubble, index) => {
+                const bubbleElement = document.createElement('div');
+                bubbleElement.className = 'bubble';
+                bubbleElement.textContent = bubble.text;
+                bubbleElement.dataset.pairId = bubble.pairId;
+                bubbleElement.dataset.type = bubble.type;
+                
+                // Random color for each bubble
+                const hue = Math.floor(Math.random() * 360);
+                bubbleElement.style.backgroundColor = `hsl(${hue}, 80%, 60%)`;
+                
+                bubbleElement.addEventListener('click', () => handleBubbleClick(bubbleElement));
+                bubblesContainer.appendChild(bubbleElement);
+            });
+            
+            // Reset game state
+            selectedBubbles = [];
+            matchedPairs = 0;
+            gameActive = true;
+        }
+
+        // Shuffle bubbles
+        function shuffleBubbles(bubbles) {
+            for (let i = bubbles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [bubbles[i], bubbles[j]] = [bubbles[j], bubbles[i]];
+            }
+            return bubbles;
+        }
+
+        // Handle bubble click
+        function handleBubbleClick(bubble) {
+            if (!gameActive || bubble.classList.contains('matched')) return;
+            
+            // Play bubble sound
+            bubbleSound.currentTime = 0;
+            bubbleSound.play();
+            
+            // If same bubble clicked twice, deselect it
+            if (selectedBubbles.length === 1 && selectedBubbles[0] === bubble) {
+                selectedBubbles[0].classList.remove('selected');
+                selectedBubbles = [];
+                return;
+            }
+            
+            // Select bubble
+            bubble.classList.add('selected');
+            selectedBubbles.push(bubble);
+            
+            // If two bubbles selected, check for match
+            if (selectedBubbles.length === 2) {
+                const bubble1 = selectedBubbles[0];
+                const bubble2 = selectedBubbles[1];
+                
+                // Check if they match
+                if (bubble1.dataset.pairId === bubble2.dataset.pairId && 
+                    bubble1.dataset.type !== bubble2.dataset.type) {
+                    // Match found
+                    matchSound.play();
+                    bubble1.classList.add('matched');
+                    bubble2.classList.add('matched');
+                    matchedPairs++;
+                    
+                    // Check if all pairs matched
+                    if (matchedPairs === currentPairs.length) {
+                        endGame();
+                    }
+                } else {
+                    // No match
+                    setTimeout(() => {
+                        bubble1.classList.remove('selected');
+                        bubble2.classList.remove('selected');
+                    }, 1000);
+                }
+                
+                // Reset selection
+                setTimeout(() => {
+                    selectedBubbles = [];
+                }, 1000);
+            }
+        }
+
+        // End game
+        function endGame() {
+            gameActive = false;
+            clearInterval(timer);
+            
+            // Calculate time
+            const endTime = new Date();
+            const timeDiff = (endTime - startTime) / 1000; // in seconds
+            const minutes = Math.floor(timeDiff / 60);
+            const seconds = Math.floor(timeDiff % 60);
+            
+            // Show success message
+            completionTime.textContent = `用时: ${minutes}分${seconds}秒`;
+            successMessage.style.display = 'block';
+            successSound.play();
+        }
+
+        // Start game timer
+        function startTimer() {
+            startTime = new Date();
+            timer = setInterval(() => {
+                const currentTime = new Date();
+                const timeDiff = (currentTime - startTime) / 1000; // in seconds
+                const minutes = Math.floor(timeDiff / 60);
+                const seconds = Math.floor(timeDiff % 60);
+                completionTime.textContent = `用时: ${minutes}分${seconds}秒`;
+            }, 1000);
+        }
+
+        // Event listeners
+        shuffleBtn.addEventListener('click', () => {
+            if (gameActive) {
+                initGame();
+            }
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!gameActive) {
+                initGame();
+                startTimer();
+                gameActive = true;
+            }
+        });
+
+        nextRoundBtn.addEventListener('click', () => {
+            successMessage.style.display = 'none';
+            initGame();
+            startTimer();
+        });
+
+        // Initialize game
+        initGame();
+    </script>
+</body>
+</html>

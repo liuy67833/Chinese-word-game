@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make the Sentence - 连词成句游戏</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #6ec0ff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #ff9ff3;
+            text-shadow: 4px 4px 0 #ff6b6b, 6px 6px 0 #feca57;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            width: 90%;
+            min-height: 200px;
+        }
+
+        .word-box {
+            background-color: #feca57;
+            border-radius: 15px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #2f3542;
+            box-shadow: 5px 5px 0 #ff6b6b, 
+                        inset 3px 3px 0 rgba(255,255,255,0.5);
+            transition: all 0.2s;
+            position: relative;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 7px 7px 0 #ff6b6b, 
+                        inset 3px 3px 0 rgba(255,255,255,0.5);
+        }
+
+        .word-box:active {
+            transform: translateY(2px);
+        }
+
+        .pinyin {
+            font-size: 0.8rem;
+            color: #576574;
+            margin-bottom: 5px;
+        }
+
+        .sentence-box {
+            background-color: #ff9f43;
+            border-radius: 20px;
+            padding: 20px;
+            width: 80%;
+            min-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 0 #cc8e35, 
+                        inset 5px 5px 0 rgba(255,255,255,0.3);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .sentence-box::before {
+            content: "";
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            width: 40px;
+            height: 20px;
+            background-color: #ff9f43;
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+        }
+
+        .sentence-box::after {
+            content: "";
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            width: 40px;
+            height: 20px;
+            background-color: #ff9f43;
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+        }
+
+        .decoration {
+            position: absolute;
+            z-index: -1;
+        }
+
+        .mushroom {
+            width: 50px;
+            height: 50px;
+            background-color: #ff6b6b;
+            border-radius: 50% 50% 30% 30%;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .mushroom::before {
+            content: "";
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            top: 10px;
+            left: 10px;
+        }
+
+        .star {
+            width: 30px;
+            height: 30px;
+            background-color: #feca57;
+            clip-path: polygon(
+                50% 0%, 61% 35%, 98% 35%, 68% 57%, 
+                79% 91%, 50% 70%, 21% 91%, 32% 57%, 
+                2% 35%, 39% 35%
+            );
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn-prev {
+            background-color: #1dd1a1;
+            color: white;
+        }
+
+        .btn-next {
+            background-color: #ff6b6b;
+            color: white;
+        }
+
+        .btn-check {
+            background-color: #54a0ff;
+            color: white;
+            padding: 12px 30px;
+            margin-left: 20px;
+        }
+
+        .result {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            height: 40px;
+        }
+
+        .correct {
+            color: #1dd1a1;
+            animation: bounce 0.5s;
+        }
+
+        .incorrect {
+            color: #ff6b6b;
+            animation: shake 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            20%, 60% {transform: translateX(-10px);}
+            40%, 80% {transform: translateX(10px);}
+        }
+
+        .word-in-sentence {
+            background-color: #feca57;
+            border-radius: 10px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #2f3542;
+            box-shadow: 3px 3px 0 #ff6b6b, 
+                        inset 2px 2px 0 rgba(255,255,255,0.5);
+            transition: all 0.2s;
+            margin: 5px;
+        }
+
+        .word-in-sentence:hover {
+            transform: translateY(-3px);
+        }
+
+        .word-in-sentence:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Make the Sentence</h1>
+        
+        <div class="word-bank" id="wordBank">
+            <!-- 词语将在这里动态生成 -->
+        </div>
+        
+        <div class="sentence-box" id="sentenceBox">
+            <div class="mushroom"></div>
+            <div class="star"></div>
+            <!-- 玩家选择的词语将出现在这里 -->
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <div class="controls">
+            <button class="btn btn-prev" id="btnPrev">上一个</button>
+            <button class="btn btn-next" id="btnNext">下一句</button>
+            <button class="btn btn-check" id="btnCheck">Check</button>
+        </div>
+    </div>
+
+    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+    <audio id="errorSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3" preload="auto"></audio>
+    <audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+
+    <script>
+        // 句子数据
+        const sentences = [
+            { parts: ["我们", "给米露他们", "买点", "礼物吧"], pinyin: ["wǒ men", "gěi mǐ lù tā men", "mǎi diǎn", "lǐ wù ba"] },
+            { parts: ["买", "什么", "合适呢"], pinyin: ["mǎi", "shén me", "hé shì ne"] },
+            { parts: ["买", "熊猫玩具", "怎么样"], pinyin: ["mǎi", "xióng māo wán jù", "zěn me yàng"] },
+            { parts: ["可以", "他们", "都", "喜欢", "熊猫"], pinyin: ["kě yǐ", "tā men", "dōu", "xǐ huān", "xióng māo"] },
+            { parts: ["那我们", "比赛吧", "看谁", "先找到"], pinyin: ["nà wǒ men", "bǐ sài ba", "kàn shéi", "xiān zhǎo dào"] },
+            { parts: ["同意！开始", "比赛！"], pinyin: ["tóng yì！ kāi shǐ", "bǐ sài！"] },
+            { parts: ["让我先找找", "啊！"+"玩具"+"！", "我找到了！"], pinyin: ["ràng wǒ xiān zhǎo zhao", "ā！"+"wán jù"+"！", "wǒ zhǎo dào le！"] },
+            { parts: ["超市", "太大了", "怎么办", "呢"], pinyin: ["chāo shì", "tài dà le", "zěn me bàn", "ne"] },
+            { parts: ["叔叔", "请问", "玩具", "在什么", "地方"], pinyin: ["shū shu", "qǐng wèn", "wán jù", "zài shén me", "dì fāng"] },
+            { parts: ["我也", "不知道", "你问问", "别人吧"], pinyin: ["wǒ yě", "bù zhī dào", "nǐ wèn wen", "bié ren ba"] },
+            { parts: ["阿姨", "打扰一下", "请问", "玩具", "在", "什么", "地方"], pinyin: ["ā yí", "dǎ rǎo yī xià", "qǐng wèn", "wán jù", "zài", "shén me", "dì fāng"] },
+            { parts: ["一直", "向前走", "再左转就是了", "就在电梯旁边", "上面写着"+"玩具"], pinyin: ["yī zhí", "xiàng qián zǒu", "zài zuǒ zhuǎn jiù shì le", "jiù zài diàn tī páng biān", "shàng miàn xiě zhe"+"wán jù"] },
+            { parts: ["谢", "谢", "阿", "姨"], pinyin: ["xiè", "xiè", "ā", "yí"] },
+            { parts: ["真是个", "有礼貌的", "小朋友"], pinyin: ["zhēn shì gè", "yǒu lǐ mào de", "xiǎo péng yǒu"] },
+            { parts: ["超市", "真大啊", "怎么", "才能找到呢"], pinyin: ["chāo shì", "zhēn dà a", "zěn me", "cái néng zhǎo dào ne"] },
+            { parts: ["服务员", "请问", "熊猫玩具", "在哪儿"], pinyin: ["fú wù yuán", "qǐng wèn", "xióng māo wán jù", "zài nǎ er"] },
+            { parts: ["你看", "电灯下边", "就是啊", "写着"+"玩具"], pinyin: ["nǐ kàn", "diàn dēng xià biān", "jiù shì a", "xiě zhe"+"wán jù"] },
+            { parts: ["哦", "这个词", "我还没学过呢", "不过", "我已知道", "地方了", "谢谢你"], pinyin: ["ò", "zhè gè cí", "wǒ hái méi xué guò ne", "bù guò", "wǒ yǐ zhī dào", "dì fāng le", "xiè xiè nǐ"] },
+            { parts: ["不客气", "小", "朋友"], pinyin: ["bù kè qì", "xiǎo", "péng yǒu"] },
+            { parts: ["你们俩", "太慢了", "看", "我已经找到", "熊猫玩具了"], pinyin: ["nǐ men liǎ", "tài màn le", "kàn", "wǒ yǐ jīng zhǎo dào", "xióng māo wán jù le"] },
+            { parts: ["你", "真", "厉害！"], pinyin: ["nǐ", "zhēn", "lì hài！"] }
+        ];
+
+        // 游戏状态
+        let currentSentenceIndex = 0;
+        let selectedWords = [];
+        let correctOrder = [];
+
+        // DOM元素
+        const wordBank = document.getElementById('wordBank');
+        const sentenceBox = document.getElementById('sentenceBox');
+        const resultDiv = document.getElementById('result');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnCheck = document.getElementById('btnCheck');
+        const clickSound = document.getElementById('clickSound');
+        const errorSound = document.getElementById('errorSound');
+        const successSound = document.getElementById('successSound');
+
+        // 初始化游戏
+        function initGame() {
+            resultDiv.textContent = '';
+            resultDiv.className = 'result';
+            selectedWords = [];
+            correctOrder = [...sentences[currentSentenceIndex].parts];
+            
+            // 打乱词语顺序
+            const shuffledWords = [...sentences[currentSentenceIndex].parts];
+            const shuffledPinyin = [...sentences[currentSentenceIndex].pinyin];
+            
+            // Fisher-Yates 洗牌算法
+            for (let i = shuffledWords.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+                [shuffledPinyin[i], shuffledPinyin[j]] = [shuffledPinyin[j], shuffledPinyin[i]];
+            }
+            
+            // 清空并重新填充词语区
+            wordBank.innerHTML = '';
+            sentenceBox.innerHTML = '<div class="mushroom"></div><div class="star"></div>';
+            
+            // 创建词语盒子
+            shuffledWords.forEach((word, index) => {
+                const wordBox = document.createElement('div');
+                wordBox.className = 'word-box';
+                wordBox.innerHTML = `
+                    <div class="pinyin">${shuffledPinyin[index]}</div>
+                    <div>${word}</div>
+                `;
+                wordBox.addEventListener('click', () => selectWord(word, wordBox));
+                wordBank.appendChild(wordBox);
+            });
+            
+            // 更新按钮状态
+            btnPrev.disabled = currentSentenceIndex === 0;
+            btnNext.disabled = currentSentenceIndex === sentences.length - 1;
+        }
+
+        // 选择词语
+        function selectWord(word, element) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+            
+            // 从词语区移除
+            element.remove();
+            
+            // 添加到句子区
+            const wordInSentence = document.createElement('div');
+            wordInSentence.className = 'word-in-sentence';
+            wordInSentence.textContent = word;
+            wordInSentence.addEventListener('click', () => returnWord(word, wordInSentence));
+            sentenceBox.appendChild(wordInSentence);
+            
+            // 记录选择的顺序
+            selectedWords.push(word);
+        }
+
+        // 返回词语到词语区
+        function returnWord(word, element) {
+            clickSound.currentTime = 0;
+            clickSound.play();
+            
+            // 从句子区移除
+            element.remove();
+            
+            // 从选择数组中移除
+            const wordIndex = selectedWords.indexOf(word);
+            if (wordIndex > -1) {
+                selectedWords.splice(wordIndex, 1);
+            }
+            
+            // 重新添加到词语区
+            const pinyinIndex = sentences[currentSentenceIndex].parts.indexOf(word);
+            const pinyin = sentences[currentSentenceIndex].pinyin[pinyinIndex];
+            
+            const wordBox = document.createElement('div');
+            wordBox.className = 'word-box';
+            wordBox.innerHTML = `
+                <div class="pinyin">${pinyin}</div>
+                <div>${word}</div>
+            `;
+            wordBox.addEventListener('click', () => selectWord(word, wordBox));
+            wordBank.appendChild(wordBox);
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            if (selectedWords.length !== correctOrder.length) {
+                resultDiv.textContent = '请选择所有词语！';
+                resultDiv.className = 'result incorrect';
+                return;
+            }
+            
+            const isCorrect = selectedWords.every((word, index) => word === correctOrder[index]);
+            
+            if (isCorrect) {
+                resultDiv.textContent = 'Yes! Great！';
+                resultDiv.className = 'result correct';
+                successSound.currentTime = 0;
+                successSound.play();
+            } else {
+                resultDiv.textContent = '× NO';
+                resultDiv.className = 'result incorrect';
+                errorSound.currentTime = 0;
+                errorSound.play();
+                
+                // 震动效果
+                const wordBoxes = document.querySelectorAll('.word-in-sentence');
+                wordBoxes.forEach(box => {
+                    box.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        box.style.animation = '';
+                    }, 500);
+                });
+            }
+        }
+
+        // 事件监听
+        btnPrev.addEventListener('click', () => {
+            if (currentSentenceIndex > 0) {
+                currentSentenceIndex--;
+                initGame();
+            }
+        });
+
+        btnNext.addEventListener('click', () => {
+            if (currentSentenceIndex < sentences.length - 1) {
+                currentSentenceIndex++;
+                initGame();
+            }
+        });
+
+        btnCheck.addEventListener('click', checkAnswer);
+
+        // 开始游戏
+        initGame();
+    </script>
+</body>
+</html>
